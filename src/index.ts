@@ -4,7 +4,7 @@ import * as wallet from "./wallet";
 import * as gql from "./gql";
 import * as common from "./common";
 import { ArFSDriveEntity } from "./types/arfs_Types";
-import { checkForBrokenRootFolder } from "./utilities";
+import * as utilities from "./utilities";
 
 async function main() {
 
@@ -17,7 +17,12 @@ async function main() {
 	// const walletPrivateKey = JSON.stringify(cachedWallet.walletPrivateKey);
 
 	console.log ("Loaded Wallet: %s", owner)
-	console.log ("Your balance is %s", walletBalance)
+	console.log ("Your balance is %s AR", walletBalance)
+
+	if (walletBalance <= 0.000001) {
+		console.log ("Not enough AR to operate.  Please deposit at least 0.000001 AR to continue.")
+		return false;
+	}
 
 	// Get all of the public drives for the user, starting at block 0
 	console.log ("Getting all your public drives and checking for broken root folders")
@@ -29,22 +34,26 @@ async function main() {
 		await common.asyncForEach(publicDrives, async (publicDrive: ArFSDriveEntity) => {
 			// Check the root folder for each drive
 			console.log ("Drive Name: %s, Root Folder ID %s, Drive ID: %s", publicDrive.name, publicDrive.rootFolderId, publicDrive.driveId);
-			const broken = await checkForBrokenRootFolder(owner, publicDrive.rootFolderId)
+			const broken = await utilities.checkForBrokenRootFolder(owner, publicDrive.rootFolderId)
 			if (broken) {
 				const answer = await cli.promptForFix(publicDrive.name, "root folder", publicDrive.rootFolderId)
 				if (answer) {
-					console.log ("Fixing!")
+					console.log ("......fixing!")
+					await utilities.fixBrokenPublicRootFolder(cachedWallet.walletPrivateKey, publicDrive);
 				}
+			} else {
+				console.log ("......this root folder looks just fine!")
 			}
 		})
 	}
 
 	// Get the drive password for any private drives
 	// const drivePassword = await cli.promptForDrivePassword();
+	return true;
 }
 
 function displayBanner() {
-	console.log ("			The ArDrive Utility Suite Welcomes you!					")
+	console.log ("		The ArDrive Utility Suite Welcomes you!						")
 	console.log ("__________________________________________________________________")
 	console.log ("")
 	console.log ("This utility will scan for broken drives and attempt to fix them")

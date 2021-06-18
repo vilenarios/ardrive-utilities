@@ -59,7 +59,7 @@ export async function promptForFix(
 	console.log(" - Type: %s", type);
 	console.log(" - Id: %s", entityId);
 	const answer: string = prompt(
-		"Do you want to fix it? (default is Yes) Y/N "
+		"Do you want to fix it?  This will cost ~0.000001 AR (default is No) Y/N "
 	);
 	if (answer === "Y") {
 		return true;

@@ -1,7 +1,8 @@
-import { ArFSFileFolderEntity } from "./types/arfs_Types";
+import { ArFSDriveEntity, ArFSFileFolderEntity, JWKInterface } from "./types/arfs_Types";
 import * as gql from "./gql";
 import * as gateway from "./gateway";
 import * as common from "./common";
+import { createArFSFolderTransaction } from "./arweave";
 
 // Checks if a root folder is properly mined on Arweave
 // Returns true if it is broken and needs to be recreated
@@ -13,7 +14,6 @@ export async function checkForBrokenRootFolder(owner: string, rootFolderId: stri
         return false;
     } else {
         if (rootFolder.unixTime === 0) {
-            console.log ("Broken root folder found with ID: %s", rootFolderId)
             return true;
         } else {
             // Download the File's Metadata using the metadata transaction ID
@@ -24,9 +24,27 @@ export async function checkForBrokenRootFolder(owner: string, rootFolderId: stri
             // Get the drive name and root folder id
             rootFolder.name = dataJSON.name;
             rootFolder.lastModifiedDate = dataJSON.lastModifiedDate;
-
-            console.log ("......this root folder looks just fine!")
             return false;
         }
     }
+}
+
+// Fixes a drives root folder by creating a new one using the drive's arfs metadata
+export async function fixBrokenPublicRootFolder(walletPrivateKey: JWKInterface, publicDrive: ArFSDriveEntity) {
+    const newRootFolder: ArFSFileFolderEntity = {
+        appName: publicDrive.appName,
+        appVersion: publicDrive.appVersion,
+        arFS: publicDrive.arFS,
+        contentType: "application/json",
+        driveId: publicDrive.driveId,
+        entityType: "folder",
+        name: publicDrive.name, 
+        parentFolderId: "0",
+        entityId: publicDrive.rootFolderId,
+        lastModifiedDate: publicDrive.unixTime,
+        unixTime: publicDrive.unixTime,
+        txId: "",
+        syncStatus: 2 // Set to 2 for sync in progress
+    };
+    await createArFSFolderTransaction(walletPrivateKey, newRootFolder)
 }
