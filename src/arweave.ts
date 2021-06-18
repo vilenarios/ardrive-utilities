@@ -36,7 +36,7 @@ export async function createArFSFolderTransaction(
         while (!uploader.isComplete) {
             await uploader.uploadChunk();
         }
-        console.log ("Successfully uploaded new root folder with txId: %s", transaction.id)
+        console.log ("SUCCESS! New root folder created with txId: %s", transaction.id)
         console.log ("Please wait for it to be mined before trying to fix this drive again!")
 		return true;
 	} catch (err) {

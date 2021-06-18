@@ -9,12 +9,10 @@ import * as utilities from "./utilities";
 async function main() {
 
 	// Get the wallet that owns the broken drives
-	//const localWallet = await cli.promptForLocalWalletPath();
-	const localWallet = "C:\\stuff\\my_shared_demo_key2.json"
+	const localWallet = await cli.promptForLocalWalletPath();
 	const cachedWallet = await wallet.getCachedWallet(localWallet);
 	const owner = cachedWallet.walletPublicKey;
 	const walletBalance = await wallet.getWalletBalance(owner);
-	// const walletPrivateKey = JSON.stringify(cachedWallet.walletPrivateKey);
 
 	console.log ("Loaded Wallet: %s", owner)
 	console.log ("Your balance is %s AR", walletBalance)
@@ -32,7 +30,12 @@ async function main() {
 		console.log (publicDrives); // Error
 	} else {
 		await common.asyncForEach(publicDrives, async (publicDrive: ArFSDriveEntity) => {
-			// Check the root folder for each drive
+			// Check if the drive has a correct root folder id
+			if (publicDrive.rootFolderId === undefined) {
+				console.log ("The drive %s with ID %s is missing a root folder!", publicDrive.name, publicDrive.driveId);
+				console.log ("......This cannot be fixed... yet!")
+				return;
+			}
 			console.log ("Drive Name: %s, Root Folder ID %s, Drive ID: %s", publicDrive.name, publicDrive.rootFolderId, publicDrive.driveId);
 			const broken = await utilities.checkForBrokenRootFolder(owner, publicDrive.rootFolderId)
 			if (broken) {
