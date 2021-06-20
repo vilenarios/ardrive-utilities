@@ -1,6 +1,6 @@
 import { arweave } from './arweave';
 import Transaction from 'arweave/node/lib/transaction';
-import { ArFSDriveEntity, ArFSFileData, ArFSFileFolderEntity, JWKInterface } from './types/arfs_Types';
+import { ArFSDriveEntity, ArFSFileData, ArFSFileFolderEntity, ArFSPrivateFileFolderEntity, JWKInterface } from './types/arfs_Types';
 import { TransactionUploader } from 'arweave/node/lib/transaction-uploader';
 
 // Creates an arweave transaction to upload a drive entity
@@ -95,6 +95,52 @@ export async function createFileFolderMetaDataTransaction(
 		transaction.addTag('Folder-Id', metaData.entityId);
 		if (metaData.parentFolderId !== '0') {
 			// If the parentFolderId is 0, then this is a root folder
+			transaction.addTag('Parent-Folder-Id', metaData.parentFolderId);
+		}
+	}
+
+	// Sign the transaction
+	if (walletPrivateKey) {
+		await arweave.transactions.sign(transaction, walletPrivateKey);
+	} else {
+		await arweave.transactions.sign(transaction); // Will use ArConnect if no wallet present
+	}
+
+	return transaction;
+}
+
+// This will prepare and sign a private v2 data transaction using ArFS File Metadata Tags including privacy tags
+export async function createPrivateFileFolderMetaDataTransaction(
+	metaData: ArFSPrivateFileFolderEntity,
+	secondaryFileMetaData: Buffer, // the buffer must already be encrypted
+	walletPrivateKey?: JWKInterface
+): Promise<Transaction> {
+	let transaction: Transaction;
+	if (walletPrivateKey) {
+		// Create the arweave transaction using the file data and private key
+		transaction = await arweave.createTransaction({ data: secondaryFileMetaData }, walletPrivateKey);
+	} else {
+		transaction = await arweave.createTransaction({ data: secondaryFileMetaData }); // Will use ArConnect if no wallet present
+	}
+
+	// Tag file with ArFS Tags including tags needed for privacy
+	transaction.addTag('App-Name', metaData.appName);
+	transaction.addTag('App-Version', metaData.appVersion);
+	transaction.addTag('Unix-Time', metaData.unixTime.toString());
+	transaction.addTag('Content-Type', 'application/octet-stream');
+	transaction.addTag('Cipher', metaData.cipher);
+	transaction.addTag('Cipher-IV', metaData.cipherIV);
+	transaction.addTag('ArFS', metaData.arFS);
+	transaction.addTag('Entity-Type', metaData.entityType);
+	transaction.addTag('Drive-Id', metaData.driveId);
+
+	// Add file or folder specific tags
+	if (metaData.entityType === 'file') {
+		transaction.addTag('File-Id', metaData.entityId);
+		transaction.addTag('Parent-Folder-Id', metaData.parentFolderId);
+	} else {
+		transaction.addTag('Folder-Id', metaData.entityId);
+		if (metaData.parentFolderId !== '0') {
 			transaction.addTag('Parent-Folder-Id', metaData.parentFolderId);
 		}
 	}

@@ -647,6 +647,131 @@ export async function getAllLatestPublicDriveEntities(
 }
 
 // Gets all of the private drive entities for a users wallet
+export async function getAllLatestPrivateDriveEntities(
+	owner: string,
+	lastBlockHeight: number
+): Promise<arfsTypes.ArFSPrivateDriveEntity[] | string> {
+	const graphQLURL = primaryGraphQLURL;
+	const allDrives: arfsTypes.ArFSPrivateDriveEntity[] = [];
+	try {
+		// Search last 5 blocks minimum
+		if (lastBlockHeight > 5) {
+			lastBlockHeight -= 5;
+		}
+
+		// Create the Graphql Query to search for all drives relating to the User wallet
+		const query = {
+			query: `query {
+      			transactions(
+				block: {min: ${lastBlockHeight}}
+				first: 100
+				owners: ["${owner}"]
+				tags: [
+					{ name: "Entity-Type", values: "drive" }
+					{ name: "Drive-Privacy", values: "private" }]) 
+				{
+					edges {
+						node {
+							id
+							tags {
+								name
+								value
+							}
+						}
+					}
+      			}
+    		}`,
+		};
+
+		// Call the Arweave Graphql Endpoint
+		const response = await arweave.api.post(graphQLURL, query);
+		const { data } = response.data;
+		const { transactions } = data;
+		const { edges } = transactions;
+
+		// Iterate through each returned transaction and pull out the drive IDs
+		await common.asyncForEach(edges, async (edge: gqlTypes.GQLEdgeInterface) => {
+			const { node } = edge;
+			const { tags } = node;
+			const drive: arfsTypes.ArFSPrivateDriveEntity = {
+				appName: "",
+				appVersion: "",
+				arFS: "",
+				cipher: "",
+				cipherIV: "",
+				contentType: "application/json",
+				driveId: "",
+				drivePrivacy: "private",
+				driveAuthMode: "",
+				entityType: "drive",
+				name: "",
+				rootFolderId: "",
+				txId: "",
+				unixTime: 0,
+				syncStatus: 0,
+			};
+
+			// Iterate through each tag and pull out each drive ID as well the drives privacy status
+			tags.forEach((tag: gqlTypes.GQLTagInterface) => {
+				const key = tag.name;
+				const { value } = tag;
+				switch (key) {
+					case "App-Name":
+						drive.appName = value;
+						break;
+					case "App-Version":
+						drive.appVersion = value;
+						break;
+					case "ArFS":
+						drive.arFS = value;
+						break;
+					case "Cipher":
+						drive.cipher = value;
+						break;
+					case "Cipher-IV":
+						drive.cipherIV = value;
+						break;
+					case "Content-Type":
+						drive.contentType = value;
+						break;
+					case "Drive-Auth-Mode":
+						drive.driveAuthMode = value;
+						break;
+					case "Drive-Id":
+						drive.driveId = value;
+						break;
+					case "Drive-Privacy":
+						drive.drivePrivacy = value;
+						break;
+					case "Unix-Time":
+						drive.unixTime = +value;
+						break;
+					default:
+						break;
+				}
+			});
+
+			// Capture the TX of the private drive metadata tx
+			drive.txId = node.id;
+
+            // Add to the array only if it doesnt exist
+            if (allDrives.some(existing => existing.driveId === drive.driveId)) {
+                // This drive already exists in the array so we do not add another version of it
+            } else {
+                // This drive does not exist, so we add it
+                allDrives.push(drive);
+            }
+		});
+
+		return allDrives;
+	} catch (err) {
+		console.log(err);
+		console.log("CORE GQL ERROR: Cannot get private drive entities");
+		return "CORE GQL ERROR: Cannot get private drive entities";
+	}
+}
+
+// Gets all of the private drive entities for a users wallet
 export async function getAllPrivateDriveEntities(
 	owner: string,
 	lastBlockHeight: number
