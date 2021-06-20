@@ -3,6 +3,13 @@ In cases where Drives were not properly accepted by the network, they could be r
 
 This is a simple ArDrive Drive Fixer script that can be used to fix broken drivs. The Drive Fixer Utility can perform GQL queries to search for broken drives and fix them by submitting the correct ArFS Drive and Root Folder transactions using the metadata taken from other files/folders that were uploaded to that drive.
 
+## How to Build
+Run 'yarn build' to build the project
+
+## How to Run 
+Run 'yarn start' to build and run the app
+
+It will prompt you before submitting and transactions to Arweave.
 ## Background
 When a user creates a drive, two ArFS transactions are submitted.
 
@@ -73,10 +80,4 @@ Once mined, the orphaned files should have a Drive and Root Folder.
 ## Private Drive Considerations
 If a Private Drive needs fixing, it can still be encrypted with the information taken from existing files/folders.  However, this utility must also collect the Drive Password from the user in order to derive the Drive Keys.  The Drive Key can be derived from the Drive ID + Drive Password + User’s Wallet Signature.  This way, as long as the Drive ID is found from any content within the drive, the master Drive Key can be derived.
 
-## How to Build
-Run '''yarn build''' to build the project
 
-## How to Ru 
-Run '''yarn start''' to build and run the app
-
-It will prompt you before submitting and transactions to Arweave.
