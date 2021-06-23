@@ -4,8 +4,8 @@ In cases where Drives were not properly accepted by the network, they could be r
 This is a simple ArDrive Drive Fixer script that can be used to fix broken drivs. The Drive Fixer Utility can perform GQL queries to search for broken drives and fix them by submitting the correct ArFS Drive and Root Folder transactions using the metadata taken from other files/folders that were uploaded to that drive.
 
 ## How to Build
-Run 'yarn install' to install all dependencies
-Run 'yarn build' to build the project
+- Run 'yarn install' to install all dependencies
+- Run 'yarn build' to build the project
 
 ## How to Run 
 Run 'yarn start' to build and run the app
