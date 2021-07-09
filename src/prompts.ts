@@ -1,5 +1,5 @@
 import promptSync from "prompt-sync";
-import * as fs from 'fs';
+import * as fs from "fs";
 const prompt = promptSync({ sigint: true });
 
 import passwordPrompt from "prompts";
@@ -60,8 +60,8 @@ export async function promptForFix(
 	console.log(" - Id: %s", entityId);
 	const answer: string = prompt(
 		"Do you want to fix it?  This will cost ~0.000001 AR (default is No) Y/N "
-	);
-	if (answer === "Y") {
+	).toUpperCase();
+	if (answer === "Y" || answer === "YES") {
 		return true;
 	} else {
 		return false;
