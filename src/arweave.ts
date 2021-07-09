@@ -2,7 +2,7 @@ import Arweave from "arweave";
 import * as arfsTypes from './types/arfs_Types';
 import * as transactions from './transactions'
 import { Utf8ArrayToStr } from './common';
-import { deriveFileKey, driveDecrypt, fileEncrypt } from './crypto';
+import { driveDecrypt, fileEncrypt } from './crypto';
 import { JWKInterface } from "./types/arfs_Types";
 import { getTransactionData } from "./gateway";
 import { ArFSEncryptedData } from "./types/base_Types";
@@ -64,10 +64,9 @@ export async function createArFSPrivateRootFolder(
 		// Convert to JSON string
 		const secondaryFileMetaDataJSON = JSON.stringify(secondaryFileMetaDataTags);
 
-        // Get the file key using the Drive Key for encryption
-        const fileKey: Buffer = await deriveFileKey(rootFolder.entityId, driveKey);
+        // Use the drive key for encryption
 		const encryptedData: ArFSEncryptedData = await fileEncrypt(
-			fileKey,
+			driveKey,
 			Buffer.from(secondaryFileMetaDataJSON)
 		);
 
