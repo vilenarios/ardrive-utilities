@@ -54,7 +54,7 @@ export async function getPublicDriveEntity(
         tags: [
           { name: "Drive-Id", values: "${driveId}" }
           { name: "Entity-Type", values: "drive" }
-		  { name: "Drive-Privacy", values: "public" }]) 
+		  { name: "Drive-Privacy", values: "public" }])
         ]
       ) {
         edges {
@@ -150,7 +150,7 @@ export async function getPrivateDriveEntity(
         tags: [
           { name: "Drive-Id", values: "${driveId}" }
           { name: "Entity-Type", values: "drive" }
-		  { name: "Drive-Privacy", values: "private" }]) 
+		  { name: "Drive-Privacy", values: "private" }])
         ]
       ) {
         edges {
@@ -443,7 +443,7 @@ export async function getAllPublicDriveEntities(
 				owners: ["${owner}"]
 				tags: [
 					{ name: "Entity-Type", values: "drive" }
-					{ name: "Drive-Privacy", values: "public" }]) 
+					{ name: "Drive-Privacy", values: "public" }])
 				{
 					edges {
 						node {
@@ -547,7 +547,7 @@ export async function getAllLatestPublicDriveEntities(
 				owners: ["${owner}"]
 				tags: [
 					{ name: "Entity-Type", values: "drive" }
-					{ name: "Drive-Privacy", values: "public" }]) 
+					{ name: "Drive-Privacy", values: "public" }])
 				{
 					edges {
 						node {
@@ -637,7 +637,7 @@ export async function getAllLatestPublicDriveEntities(
                 allDrives.push(drive);
             }
 		});
-        
+
 		return allDrives;
 	} catch (err) {
 		console.log(err);
@@ -668,7 +668,7 @@ export async function getAllLatestPrivateDriveEntities(
 				owners: ["${owner}"]
 				tags: [
 					{ name: "Entity-Type", values: "drive" }
-					{ name: "Drive-Privacy", values: "private" }]) 
+					{ name: "Drive-Privacy", values: "private" }])
 				{
 					edges {
 						node {
@@ -793,7 +793,7 @@ export async function getAllPrivateDriveEntities(
 				owners: ["${owner}"]
 				tags: [
 					{ name: "Entity-Type", values: "drive" }
-					{ name: "Drive-Privacy", values: "private" }]) 
+					{ name: "Drive-Privacy", values: "private" }])
 				{
 					edges {
 						node {
@@ -1211,9 +1211,7 @@ export async function getPrivateTransactionCipherIV(
 	while (tries < 10) {
 		try {
 			// Call the Arweave Graphql Endpoint
-			const response = await arweave.api
-				.request()
-				.post(graphQLURL, query);
+			const response = await arweave.api.post(graphQLURL, query);
 			const { data } = response.data;
 			const { transactions } = data;
 			const { edges } = transactions;
@@ -1277,7 +1275,7 @@ export async function getPublicDriveRootFolderTxId(
       }
     }`,
 		};
-		const response = await arweave.api.request().post(graphQLURL, query);
+		const response = await arweave.api.post(graphQLURL, query);
 		const { data } = response.data;
 		const { transactions } = data;
 		const { edges } = transactions;
